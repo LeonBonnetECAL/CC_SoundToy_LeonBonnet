@@ -1,0 +1,12 @@
+{
+  "name": "svg-points-extractor",
+  "version": "1.0.0",
+  "description": "Extract points from SVG letters",
+  "main": "extract_points.js",
+  "scripts": {
+    "extract": "node extract_points.js"
+  },
+  "dependencies": {
+    "xmldom": "^0.6.0"
+  }
+} 
