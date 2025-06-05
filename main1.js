@@ -1,17 +1,20 @@
 let points = []; // Tableau pour stocker les points et leurs tentacules
 let fibonacci = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144];
 let segmentsPerTentacle = 6; // Nombre de segments par tentacule
-let growthSpeed = 1 / 100; // Vitesse de croissance des segments
-let amplitude = 20;
-let animationSpeed = 0.005; // Vitesse d'animation réduite
-let maxTentacles = 100;
+let growthSpeed = 1 / 100; // Vitesse de croissance plus progressive
+let animationSpeed = 1 / 50000; // Vitesse d'animation réduite
+let maxTentacles = 1000;
 let oscillators = []; // Tableau pour stocker les oscillateurs
 let sizeCircle = 100;
-let sizeStroke = 50;
+let sizeStroke = 70;
+let startStrokeSize = 0; // Taille du stroke au début de chaque segment
+let endStrokeSize = 0; // Taille du stroke à la fin de chaque segment
+let minStroke = 15;
+let maxStroke = 50;
 
 // Variables pour le texte
 let currentWord = [];
-let letterSpacing = 300; // Espacement réduit pour mieux centrer
+let letterSpacing = 200; // Espacement réduit pour avoir plus de lettres par ligne
 let currentX;
 let currentY;
 let letterScale = 1.5; // Échelle réduite pour mieux s'adapter à l'écran
@@ -66,206 +69,212 @@ let alphabetPoints = {
     [68.49, 51.03],
   ],
   b: [
-    [120.0, 60.0],
-    [110.0, 80.0],
-    [100.0, 100.0],
-    [110.0, 120.0],
-    [120.0, 140.0],
-    [100.0, 160.0],
+    [80.15, 65.82],
+    [97.8, 66.47],
+    [115.87, 69.48],
+    [132.06, 101.85],
+    [81.23, 119.92],
+    [81.23, 29.2],
   ],
   c: [
-    [130.0, 70.0],
-    [110.0, 60.0],
-    [90.0, 80.0],
-    [90.0, 120.0],
-    [110.0, 140.0],
-    [130.0, 130.0],
+    [150.83, 115.41],
+    [132.76, 117.29],
+    [115.07, 117.67],
+    [79.3, 109.01],
+    [58.97, 58.18],
+    [146.31, 35.22],
   ],
   d: [
-    [80.0, 60.0],
-    [80.0, 140.0],
-    [110.0, 120.0],
-    [120.0, 100.0],
-    [110.0, 80.0],
-    [80.0, 100.0],
+    [153.41, 65.34],
+    [134.59, 66.47],
+    [117.27, 69.48],
+    [101.46, 101.48],
+    [152.66, 119.92],
+    [152.28, 28.82],
   ],
   e: [
-    [130.0, 60.0],
-    [80.0, 60.0],
-    [80.0, 100.0],
-    [120.0, 100.0],
-    [80.0, 140.0],
-    [130.0, 140.0],
+    [141.69, 103.36],
+    [122.12, 104.87],
+    [107.81, 94.7],
+    [108.09, 59.63],
+    [162.02, 72.49],
+    [77.69, 107.12],
   ],
   f: [
-    [130.0, 60.0],
-    [80.0, 60.0],
-    [80.0, 100.0],
-    [120.0, 100.0],
-    [80.0, 140.0],
-    [80.0, 180.0],
+    [114.91, 115.78],
+    [114.91, 97.34],
+    [114.91, 78.89],
+    [152.18, 78.89],
+    [105.5, 47.64],
+    [198.11, 47.64],
   ],
   g: [
-    [120.0, 60.0],
-    [90.0, 50.0],
-    [70.0, 80.0],
-    [70.0, 120.0],
-    [90.0, 150.0],
-    [120.0, 120.0],
+    [121.64, 84.54],
+    [139.71, 84.54],
+    [139.33, 102.98],
+    [105.82, 116.54],
+    [70.44, 75.88],
+    [146.11, 27.31],
   ],
   h: [
-    [70.0, 50.0],
-    [70.0, 150.0],
-    [70.0, 100.0],
-    [120.0, 100.0],
-    [120.0, 50.0],
-    [120.0, 150.0],
+    [110.67, 126.32],
+    [110.67, 107.12],
+    [110.67, 90.56],
+    [78.67, 73.24],
+    [63.61, 126.32],
+    [63.61, 35.22],
   ],
   i: [
-    [95.0, 50.0],
-    [95.0, 80.0],
-    [95.0, 110.0],
-    [95.0, 140.0],
-    [85.0, 140.0],
-    [105.0, 140.0],
+    [199.6, 121.71],
+    [180.12, 121.71],
+    [162.62, 121.71],
+    [125.35, 121.71],
+    [180.69, 122.07],
+    [180.69, 31.85],
   ],
   j: [
-    [120.0, 50.0],
-    [120.0, 100.0],
-    [120.0, 150.0],
-    [100.0, 170.0],
-    [80.0, 150.0],
-    [100.0, 140.0],
+    [102.09, 26.25],
+    [120.73, 26.25],
+    [139.08, 26.25],
+    [139.08, 62.96],
+    [139.08, 116.89],
+    [52.4, 92.61],
   ],
   k: [
-    [70.0, 50.0],
-    [70.0, 150.0],
-    [70.0, 100.0],
-    [120.0, 50.0],
-    [70.0, 100.0],
-    [120.0, 150.0],
+    [124.07, 125.64],
+    [107.41, 117.74],
+    [90.75, 109.27],
+    [108.82, 78.21],
+    [81.43, 125.92],
+    [81.43, 35.29],
   ],
   l: [
-    [70.0, 50.0],
-    [70.0, 150.0],
-    [90.0, 150.0],
-    [110.0, 150.0],
-    [130.0, 150.0],
-    [130.0, 130.0],
+    [161.76, 117.74],
+    [144.06, 117.74],
+    [125.62, 117.74],
+    [162.06, 117.74],
+    [107.43, 117.74],
+    [107.43, 27.57],
   ],
   m: [
-    [70.0, 150.0],
-    [70.0, 50.0],
-    [100.0, 100.0],
-    [130.0, 50.0],
-    [130.0, 150.0],
-    [100.0, 100.0],
+    [134.95, 77.83],
+    [134.95, 59.2],
+    [134.95, 40.37],
+    [114.06, 69.55],
+    [78.29, 27.38],
+    [78.29, 118.3],
   ],
   n: [
-    [70.0, 150.0],
-    [70.0, 50.0],
-    [130.0, 150.0],
-    [130.0, 50.0],
-    [100.0, 100.0],
-    [100.0, 100.0],
+    [149.77, 61.27],
+    [149.77, 79.34],
+    [149.77, 98.25],
+    [126.05, 69.45],
+    [90.76, 27.1],
+    [90.76, 118.3],
   ],
   o: [
-    [100.0, 50.0],
-    [70.0, 80.0],
-    [70.0, 120.0],
-    [100.0, 150.0],
-    [130.0, 120.0],
-    [130.0, 80.0],
+    [84.21, 118.58],
+    [101.72, 112.09],
+    [119.23, 105.31],
+    [119.23, 69.74],
+    [84.78, 27.1],
+    [84.21, 118.58],
   ],
   p: [
-    [70.0, 150.0],
-    [70.0, 50.0],
-    [110.0, 50.0],
-    [130.0, 70.0],
-    [110.0, 90.0],
-    [70.0, 90.0],
+    [68.35, 83.57],
+    [85.86, 83.29],
+    [103.93, 80.18],
+    [119.74, 47.71],
+    [68.63, 29.92],
+    [68.63, 119.43],
   ],
   q: [
-    [100.0, 50.0],
-    [70.0, 80.0],
-    [70.0, 120.0],
-    [100.0, 150.0],
-    [130.0, 120.0],
-    [140.0, 160.0],
+    [148.49, 83.57],
+    [130.98, 83.29],
+    [112.91, 80.18],
+    [97.1, 47.71],
+    [148.21, 29.92],
+    [148.21, 119.43],
   ],
   r: [
-    [70.0, 150.0],
-    [70.0, 50.0],
-    [110.0, 50.0],
-    [130.0, 70.0],
-    [110.0, 90.0],
-    [130.0, 150.0],
+    [121.43, 118.4],
+    [109.75, 102.96],
+    [95.45, 91.67],
+    [125.57, 70.58],
+    [90.55, 28.8],
+    [91.31, 119.15],
   ],
   s: [
-    [120.0, 60.0],
-    [90.0, 50.0],
-    [70.0, 80.0],
-    [120.0, 120.0],
-    [90.0, 150.0],
-    [70.0, 140.0],
+    [114.88, 19.29],
+    [99.35, 27.48],
+    [84.95, 39.62],
+    [67.16, 69.83],
+    [120.81, 69.83],
+    [71.12, 145.78],
   ],
   t: [
-    [70.0, 50.0],
-    [130.0, 50.0],
-    [100.0, 50.0],
-    [100.0, 150.0],
-    [90.0, 150.0],
-    [110.0, 150.0],
+    [124.05, 115.76],
+    [124.05, 97.12],
+    [124.05, 78.77],
+    [124.05, 42.07],
+    [160.48, 42.07],
+    [70.41, 42.07],
   ],
   u: [
-    [70.0, 50.0],
-    [70.0, 120.0],
-    [100.0, 150.0],
-    [130.0, 120.0],
-    [130.0, 50.0],
-    [100.0, 150.0],
+    [141.7, 51.67],
+    [141.7, 70.11],
+    [141.7, 88.18],
+    [141.7, 123.57],
+    [87.86, 123.57],
+    [87.86, 34.16],
   ],
   v: [
-    [70.0, 50.0],
-    [100.0, 150.0],
-    [130.0, 50.0],
-    [100.0, 150.0],
-    [100.0, 150.0],
-    [100.0, 150.0],
+    [181.31, 32.75],
+    [167.83, 46.23],
+    [154.91, 59.15],
+    [129.48, 84.58],
+    [90.8, 123.27],
+    [90.8, 33.22],
   ],
   w: [
-    [70.0, 50.0],
-    [85.0, 150.0],
-    [100.0, 100.0],
-    [115.0, 150.0],
-    [130.0, 50.0],
-    [100.0, 100.0],
+    [135.1, 61.49],
+    [124.93, 76.11],
+    [114.2, 91.02],
+    [92.18, 61.49],
+    [77.22, 115.38],
+    [24.7, 40],
   ],
   x: [
-    [70.0, 50.0],
-    [130.0, 150.0],
-    [100.0, 100.0],
-    [130.0, 50.0],
-    [70.0, 150.0],
-    [100.0, 100.0],
+    [90.25, 103.24],
+    [104.65, 88.84],
+    [117.07, 76.42],
+    [142.91, 50.58],
+    [142.91, 105.22],
+    [89.4, 32.09],
   ],
   y: [
-    [70.0, 50.0],
-    [100.0, 100.0],
-    [130.0, 50.0],
-    [100.0, 100.0],
-    [100.0, 150.0],
-    [100.0, 150.0],
+    [108.45, 31.43],
+    [114.48, 48.75],
+    [132.55, 50.25],
+    [132.55, 16.37],
+    [132.55, 69.45],
+    [70.24, 131.76],
   ],
   z: [
-    [70.0, 50.0],
-    [130.0, 50.0],
-    [70.0, 150.0],
-    [130.0, 150.0],
-    [70.0, 150.0],
-    [130.0, 50.0],
+    [73.77, 54.58],
+    [92.97, 54.58],
+    [111.04, 54.58],
+    [146.62, 54.58],
+    [109.34, 95.24],
+    [200.26, 95.24],
   ],
 };
+
+let scrollOffset = 0;
+let scrollSpeed = 2;
+let isScrolling = false;
+let cursorBlink = 0;
+let cursorVisible = true;
 
 function preload() {
   // Charger tous les sons
@@ -288,7 +297,7 @@ class Tentacle {
     this.targetPoints = targetPoints;
     this.morphing = false;
     this.morphProgress = 0;
-    this.morphSpeed = 0.02;
+    this.morphSpeed = 0.005; // Vitesse de morphing ralentie
     this.letter = letter;
 
     // Créer l'oscillateur pour cette tentacule
@@ -408,8 +417,15 @@ class Tentacle {
 
   draw() {
     push();
-    strokeWeight(sizeStroke);
     stroke(0, 100);
+
+    // Calculer la taille du stroke en fonction de la position X et Y
+    let mouseXPos = constrain(mouseX, 0, width);
+    let mouseYPos = constrain(mouseY, 0, height);
+
+    // X contrôle startStrokeSize, Y contrôle endStrokeSize
+    startStrokeSize = map(mouseXPos, 0, width, minStroke, maxStroke);
+    endStrokeSize = map(mouseYPos, 0, height, minStroke, maxStroke);
 
     // Dessiner les segments avec des lignes droites
     for (let i = 0; i <= this.currentSegment; i++) {
@@ -418,7 +434,26 @@ class Tentacle {
         let alpha = map(i, 0, this.segments.length, 255, 50);
         stroke(0, alpha);
         noFill();
-        line(segment.x1, segment.y1, segment.x2, segment.y2);
+
+        // Dessiner le segment avec un dégradé de taille
+        let steps = 20; // Nombre de sous-segments pour le dégradé
+        for (let j = 0; j < steps; j++) {
+          let t = j / steps;
+          let x1 = lerp(segment.x1, segment.x2, t);
+          let y1 = lerp(segment.y1, segment.y2, t);
+          let x2 = lerp(segment.x1, segment.x2, (j + 1) / steps);
+          let y2 = lerp(segment.y1, segment.y2, (j + 1) / steps);
+
+          // Alterner le sens du dégradé pour chaque segment
+          let strokeSize;
+          if (i % 2 === 0) {
+            strokeSize = lerp(startStrokeSize, endStrokeSize, t);
+          } else {
+            strokeSize = lerp(endStrokeSize, startStrokeSize, t);
+          }
+          strokeWeight(strokeSize);
+          line(x1, y1, x2, y2);
+        }
       }
     }
     pop();
@@ -448,13 +483,21 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   background(220);
 
-  // Initialiser les positions au centre de l'écran
-  currentX = width / 2 - letterSpacing;
-  currentY = height / 2;
+  // Initialiser les positions en haut à gauche de l'écran
+  currentX = letterSpacing;
+  currentY = letterSpacing;
 }
 
 function draw() {
   background(220);
+
+  // Calculer le défilement automatique pour suivre la dernière lettre
+  let targetScroll = Math.max(0, currentY - height + letterSpacing);
+  scrollOffset = lerp(scrollOffset, targetScroll, 0.1);
+
+  // Appliquer le défilement
+  push();
+  translate(0, -scrollOffset);
 
   // Dessiner les points verts de la lettre actuelle
   fill(0, 255, 0, 150);
@@ -509,41 +552,80 @@ function draw() {
     point.tentacle.update();
     point.tentacle.draw();
   }
+
+  // Dessiner le curseur
+  cursorBlink += 0.1;
+  if (cursorBlink > 1) {
+    cursorBlink = 0;
+    cursorVisible = !cursorVisible;
+  }
+
+  if (cursorVisible) {
+    stroke(0);
+    strokeWeight(2);
+    line(currentX, currentY - 20, currentX, currentY + 20);
+  }
+
+  pop();
 }
 
 document.addEventListener("keydown", (event) => {
   if (event.code === "Space") {
     event.preventDefault();
+    currentX += letterSpacing;
     spacePressed();
   } else if (event.key >= "a" && event.key <= "z") {
     event.preventDefault();
     createLetterTentacle(event.key);
-  } else if (event.key === "Backspace") {
-    event.preventDefault();
-    if (currentWord.length > 0) {
-      let lastLetter = currentWord.pop();
-      if (lastLetter.tentacle) {
-        lastLetter.tentacle.cleanup();
-      }
-      let index = points.findIndex((p) => p.tentacle === lastLetter.tentacle);
-      if (index !== -1) {
-        points.splice(index, 1);
-      }
-      currentX -= letterSpacing;
-      if (currentX < width / 2 - letterSpacing * 2) {
-        currentX = width - 500;
-        currentY -= letterSpacing;
-      }
-    }
   } else if (event.key === "Enter") {
     event.preventDefault();
-    currentX = width / 2 - letterSpacing * 2;
+    currentX = letterSpacing * 2;
     currentY += letterSpacing;
     currentWord = [];
+  } else if (event.key === "Backspace") {
+    event.preventDefault();
+
+    if (currentWord.length > 0) {
+      // On récupère le dernier caractère
+      let lastChar = currentWord[currentWord.length - 1];
+
+      if (lastChar === " ") {
+        // Si c'est un espace, on le retire simplement
+        currentWord.pop();
+        currentX -= letterSpacing;
+      } else {
+        // Si c'est une lettre, on supprime aussi la dernière tentacule si elle existe
+        if (points.length > 0) {
+          let lastPoint = points.pop();
+          if (lastPoint.tentacle) {
+            lastPoint.tentacle.cleanup();
+          }
+        }
+        currentWord.pop();
+        currentX -= letterSpacing;
+
+        // Si on est au début d'une ligne, remonter à la ligne précédente
+        if (currentX <= letterSpacing) {
+          currentX = width - letterSpacing;
+          currentY -= letterSpacing;
+        }
+      }
+    }
   }
 });
 
 function spacePressed() {
+  // Ajouter un espace au mot courant
+  currentWord.push(" ");
+  currentX += letterSpacing;
+
+  // Si on atteint la fin de la ligne, passer à la ligne suivante
+  if (currentX > width - letterSpacing) {
+    currentX = letterSpacing;
+    currentY += letterSpacing;
+  }
+
+  // Jouer le son pour toutes les tentacules
   for (let point of points) {
     point.tentacle.osc.amp(0.5);
     setTimeout(() => {
@@ -569,10 +651,19 @@ function createLetterTentacle(letter) {
     letterCenterX /= letterPoints.length;
     letterCenterY /= letterPoints.length;
 
+    // Ajuster l'échelle pour la lettre "r"
+    let scale = letter === "r" ? letterScale * 1.2 : letterScale;
+
+    // Vérifier si on doit passer à la ligne
+    if (currentX > width - letterSpacing) {
+      currentX = letterSpacing;
+      currentY += letterSpacing;
+    }
+
     // Centrer les points de la lettre et appliquer l'échelle
     let centeredPoints = letterPoints.map((point) => [
-      currentX + (point[0] - letterCenterX) * letterScale,
-      currentY + (point[1] - letterCenterY) * letterScale,
+      currentX + (point[0] - letterCenterX) * scale,
+      currentY + (point[1] - letterCenterY) * scale,
     ]);
 
     // Mettre à jour les points de la lettre actuelle
@@ -588,15 +679,23 @@ function createLetterTentacle(letter) {
     };
 
     points.push(newTentacle);
-    currentWord.push(newTentacle);
+    currentWord.push(letter);
 
     // Déplacer la position X pour la prochaine lettre
     currentX += letterSpacing;
 
-    // Si on atteint la fin de la ligne, passer à la ligne suivante
-    if (currentX > width - letterSpacing) {
-      currentX = width / 2 - letterSpacing;
-      currentY += letterSpacing;
+    // Si on atteint le bas de l'écran et qu'on a atteint le maximum de lettres
+    if (currentY > height - letterSpacing && points.length >= maxTentacles) {
+      // Supprimer toutes les lettres existantes
+      for (let point of points) {
+        if (point.tentacle) {
+          point.tentacle.cleanup();
+        }
+      }
+      points = [];
+      currentWord = [];
+      // Recommencer en haut
+      currentY = letterSpacing;
     }
 
     // Limiter le nombre de tentacules visibles
@@ -607,17 +706,22 @@ function createLetterTentacle(letter) {
   }
 }
 
-// Gestionnaire d'événements pour le redimensionnement de la fenêtre
+// Ajouter la gestion de la molette de la souris
+function mouseWheel(event) {
+  // Calculer la nouvelle position de défilement
+  let newScrollOffset = scrollOffset + event.delta;
+
+  // Limiter le défilement pour ne pas aller trop haut ou trop bas
+  let maxScroll = Math.max(0, currentY - height + letterSpacing);
+  scrollOffset = constrain(newScrollOffset, 0, maxScroll);
+
+  return false; // Empêcher le défilement par défaut
+}
+
+// Modifier la fonction windowResized pour gérer le redimensionnement
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  // Recentrer les lettres existantes
-  if (currentWord.length > 0) {
-    currentX = width / 2 - letterSpacing;
-    currentY = height / 2;
-    // Recréer toutes les lettres
-    let letters = currentWord.map((word) => word.letter);
-    currentWord = [];
-    points = [];
-    letters.forEach((letter) => createLetterTentacle(letter));
-  }
+  // Ajuster la position de défilement
+  let targetScroll = Math.max(0, currentY - height + letterSpacing);
+  scrollOffset = targetScroll;
 }
